@@ -3,6 +3,8 @@
 # TODO:
 # 1. Call the API to store the Mods & Subs of the connected channel appropriately
 
+# Variables #
+mods = {}
 
 # Import resources #
 import re
@@ -14,13 +16,13 @@ import importlib
 ## Start Settings ##
 HOST = 'irc.twitch.tv'                          # Twitch IRC Network
 PORT = 6667                                     # Default IRC-Port
-CHAN = ['#']                                    # Channelname = #{Nickname}
+CHAN = ['#rubbixcube']                          # Channelname = #{Nickname}
 NICK = 'MrBotto'                                # Twitch username
-PASS = ''                                       # OAuth Key
+PASS = 'oauth:0i01e59l8nr7jia5m2ekylde9wgpws'   # OAuth Key
 ## End Settings ##
 
 # List info in the shell #
-print('MrBotto ver. 3.1.7 | Created & Modified by RubbixCube & lclc98 | Original code: Liquid')
+print('MrBotto ver. 2.5.0 | Created & Modified by RubbixCube & lclc98')
 print('Important Information:')
 print('HOST = ' + HOST)
 print('PORT = ' + str(PORT))
@@ -53,14 +55,15 @@ module_name = importlib.import_module('modules.Commands')
             
 ## End Helper Functions ##
 
-options = ['Join', 'Leave', 'Who', 'Here', 'Version', 'MrBotto', 'Peta', 'Math','Mods']
+options = ['Join', 'Leave', 'Who', 'Here', 'Version', 'MrBotto', 'Hire','Peta',
+           'Math','Mods']
 def parse_message(channel, user, msg):
     if len(msg) >= 1:
         msg = msg.split(' ')
         for commandID in options:
             command = getattr(module_name, commandID)
             if(command.getCommand() == msg[0]):
-                command.excuteCommand(con, channel, user, msg, False, False)
+                command.excuteCommand(con, channel, user, msg, user in mods.get(channel), False)
                 break
             
 con = socket.socket()
@@ -88,6 +91,23 @@ while True:
             if len(line) >= 1:
                 if line[0] == 'PING':
                     send_pong(con, line[1])
+                    
+                message = ' '.join(line)
+                x = re.findall('^:jtv MODE (.*?) \+o (.*)$', message)
+                #print(x)
+                if (len(x) > 0):
+                    #print('DEBUG: Regex')
+                    channel = x[0][0] 
+                    if (channel not in mods):
+                        mods[channel] = []
+                    list = mods.get(channel)
+                    list.append(x[0][1])
+                    print(mods)
+                        
+                        
+                    #mods.append(channel)
+                    #print('New mod added')
+                    #mods[channel].append(msg[4])
 
                 if line[1] == 'PRIVMSG':
                     sender = get_sender(line[0])
@@ -96,10 +116,10 @@ while True:
                     print(sender + ": " + message)
                     
                     if (sender == "twitchnotify"):
-                        msg = message.split(' ')
-                        send_message(con, channel, 'Welome to the channel, ' + msg[0] + '!')
-                    else:
-                        parse_message(channel, sender, message)
+                        command = getattr(module_name, 'TwitchNotify')
+                        command.excuteCommand(con, channel, sender, message, False, False)
+                    
+                    parse_message(channel, sender, message)
                     
     except socket.error:
         print("Socket died")

@@ -5,6 +5,7 @@ import re
 # Variables #
 now = time.strftime("%c")
 
+
 # Basic Use of commands #
 class ICommand(object):
     def getCommand():
@@ -25,7 +26,8 @@ class Join(ICommand):
             if message[1][0] == '#':
                 send_message(con, channel, 'Now joining ' + message[1])
                 join_channel(con, message[1])
-                #send_message(con, message[1], 'Hello ' + message[1])
+                send_message(con, message[1], 'Hello ' + chan + '. A probably don\'t have any commands for this channel, if that is true please contact RubbixCube. If false, disregard this message!')
+                
 # Allow the bot to leave other channels #
 class Leave(ICommand):
     @staticmethod
@@ -33,8 +35,9 @@ class Leave(ICommand):
         return '!leave'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'Good bye')
-        part_channel(con, channel)
+        if (isMod):
+            send_message(con, channel, 'Good bye')
+            part_channel(con, channel)
 
 
 # Basic commands in ALL channels #
@@ -61,7 +64,7 @@ class Version(ICommand):
         return '!ver'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'MrBotto ver. 2.1.7')
+        send_message(con, channel, 'MrBotto ver. 2.5.0')
 
 class MrBotto(ICommand):
     @staticmethod
@@ -70,7 +73,25 @@ class MrBotto(ICommand):
     @staticmethod
     def excuteCommand(con, channel, user, message, isMod, isSub):
         send_message(con, channel, 'Domo Arigato Mr Botto')
-        
+
+class Hire(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!hire'
+    @staticmethod
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        if (isMod):
+            send_message(con, channel, 'Hello ' + user + '. If you wish to hire me, just type !join #<channel> and I\'ll be there to help you out. Just a heads up though, I won\'t be all that functional unless you talk to RubbixCube who will add commands for you.')
+
+class Mods(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!mods'
+    @staticmethod    
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, '/mods')
+
+            
 # Start channel specific commands #
 class Peta(ICommand):
     @staticmethod
@@ -90,3 +111,16 @@ class Math(ICommand):
         if channel == '#takarita324':
             send_message(con, channel, '3 * 10 = 13')
 # End channel specific commands #
+
+# Welcome new subs to the channel!
+class TwitchNotify(ICommand):
+    @staticmethod
+    def getCommand():
+        return 'twitchnotify'
+    @staticmethod    
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        msg = str.split(message)
+        if re.match('\w* subscribed for \w* months in a row!', message):
+            send_message(con, channel, 'Thanks for your continued contribution %s!' % msg[0])
+        elif re.match('\w* just subscribed!', message):
+            send_message(con, channel, str.format('Welcome to the channel %s. Enjoy your stay!' % msg[0]))
