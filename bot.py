@@ -16,9 +16,9 @@ import importlib
 ## Start Settings ##
 HOST = 'irc.twitch.tv'                          # Twitch IRC Network
 PORT = 6667                                     # Default IRC-Port
-CHAN = ['#rubbixcube']                          # Channelname = #{Nickname}
-NICK = 'MrBotto'                                # Twitch username
-PASS = 'oauth:0i01e59l8nr7jia5m2ekylde9wgpws'   # OAuth Key
+CHAN = ['']                                     # Channelname = #{Nickname}
+NICK = ''                                       # Twitch username
+PASS = ''                                       # OAuth Key
 ## End Settings ##
 
 # List info in the shell #
