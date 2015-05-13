@@ -9,6 +9,7 @@ import re
 # Variables
 cmds = {}
 points = pickle.load(open('points.p', 'r+'))
+#points = {}
 
 
 # Basic Use of commands #
@@ -26,19 +27,21 @@ class Join(ICommand):
         return '!join'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        #if (channel == ''): # Only works in my channel
-        if (len(message) > 1):
-            if (message[1][0] == '#'): 
-                send_message(con, channel, 'Now joining ' + message[1])
-                join_channel(con, message[1])
-                send_message(con, message[1], 'Hey there! I\'m MrBotto, my owner is RubbixCube who takes good care of me! I can do a lot of things and work best with Nightbot & Moobot.')
-            elif (message[1] == 'silent'): # No welcome message on join
-                if (message[2][0] == '#'):
-                    send_message(con, channel, 'Now joining ' + message[2])
-                    join_channel(con, message[2])
-            else:
-                # Assume invalid syntax
-                send_message(con, channel, 'Error: Invalid syntax. Please add a # before the channel name')
+        #if (channel == ''): # Only works in specified channel
+        # Works in every channel now
+        if (isMod):
+            if (len(message) > 1):
+                if (message[1][0] == '#'): 
+                    send_message(con, channel, 'Now joining ' + message[1])
+                    join_channel(con, message[1])
+                    send_message(con, message[1], 'Hey there! I\'m MrBotto, my owner is RubbixCube who takes good care of me! I can do a lot of things and work best with Nightbot & Moobot.')
+                elif (message[1] == 'silent'): # No welcome message on join
+                    if (message[2][0] == '#'):
+                        send_message(con, channel, 'Now joining ' + message[2])
+                        join_channel(con, message[2])
+                else:
+                    # Assume invalid syntax
+                    send_message(con, channel, 'Error: Invalid syntax. Please add a # before the channel name')
 
 # Allow the bot to leave other channels
 class Leave(ICommand):
@@ -224,24 +227,33 @@ class TwitchSlotMod(ICommand):
                 if (message[1] == 'remove'):
                     emote.remove(message[2])
                     send_message(con, channel, 'An emote has been removed')
-                elif (message[1] == 'points'):
-                    if (message[2] == 'add'):
-                        if (message[3] in points):
-                            points[message[3]] = points[message[3]] + int(message[4])
-                            send_message(con, channel, message[4] + ' points have been added to ' + message[3] + '\'s balance.')
-                            pickle.dump(points, open('points.p','wb'))
-                        else:
-                            #User not in the points dictionary
-                            points[message[3]] = 0
-                            points[message[3]] = points[message[3]] + int(message[4])
-                            send_message(con, channel, message[4] + ' points have been added to ' + message[3] + '\'s balance.')
-                            pickle.dump(points, open('points.p','wb'))
-                    elif (message[2] == 'reset'):
-                        if (message[3] in points):
-                            points[message[3]] = 0
-                            send_message(con, channel, message[3] + '\'s points have been reset.')
-                            pickle.dump(points, open('points.p','wb'))
-                    elif (message[2] == 'list'):
-                        if (message[3] in points):
-                            send_message(con, channel, message[3] + ': ' + str(points[message[3]]))
 
+class PointsMOD(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!mpoints'
+    @staticmethod    
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        if (isMod):
+            if (message[1] == 'add'):
+                if (message[2] in points):
+                    points[message[2]] = points[message[2]] + int(message[3])
+                    send_message(con, channel, message[3] + ' points have been added to ' + message[2] + '\'s balance.')
+                    pickle.dump(points, open('points.p','wb'))
+                else: #User not in the points dictionary
+                    points[message[2]] = 0
+                    points[message[2]] = points[message[2]] + int(message[3])
+                    send_message(con, channel, message[3] + ' points have been added to ' + message[2] + '\'s balance.')
+                    pickle.dump(points, open('points.p','wb'))
+            elif (message[1] == 'reset'):
+                if (message[2] in points):
+                    points[message[2]] = 0
+                    send_message(con, channel, message[2] + '\'s points have been reset.')
+                    pickle.dump(points, open('points.p','wb'))
+                else: #User not in points dictionary
+                    send_message(con, channel, 'Error: The username was not found in the dictionary')
+            elif (message[1] == 'list'):
+                if (message[2] in points):
+                    send_message(con, channel, message[2] + ': ' + str(points[message[2]]))
+                else: #User not in points dictionary
+                    send_message(con, channel, 'Error: The username was not found in the dictionary')
