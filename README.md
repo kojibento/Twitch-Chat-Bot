@@ -9,3 +9,8 @@ Information is held in the Wiki: https://github.com/RubbixCube/Twitch-Chat-Bot/w
 
 <b>RESOURCES:</b>  
 Go here to get your OAuth code: http://twitchapps.com/tmi/ 
+
+<b>CURRENT ISSUES:</b>
+- Crashes when attempting to add a mod to the list.
+-   list.append(x[0][1])
+  AttributeError: 'str' object has no attribute 'append'
