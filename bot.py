@@ -15,14 +15,10 @@ cmds = pickle.load(open('cmds.p', 'r+'))
 # Get required information #
 HOST = 'irc.twitch.tv'                          # Twitch IRC Network
 PORT = 6667                                     # Default IRC-Port
-CHAN = ['']                                     # Channelname = #{Nickname}
-NICK = ''                                       # Twitch username
-PASS = ''                                       # OAuth Key
 
 
 # Show info in the shell/terminal
-print('MrBotto ver. 3.1.0 | Created & Modified by RubbixCube & lclc98')
-print('Important Information:')
+print('Connection Information:')
 print('HOST = ' + HOST)
 print('PORT = ' + str(PORT))
 for c in CHAN:
@@ -53,16 +49,20 @@ def get_message(msg):
 module_name = importlib.import_module('modules.Commands')
             
 # List all commandID's in Commands.py
-options = ['Join', 'Leave', 'Who', 'Here', 'Version', 'MrBotto', 'Hire','Peta',
-           'Math','Mods']
+options = ['Join', 'Leave','Help' ,'Who', 'Here', 'MrBotto',
+            'DCounter', 'ComAdd', 'ComDel', 'ComEdit', 'Com',
+           'TwitchSlot', 'TwitchSlotMod', 'PointsMOD']
 # Check whether a command exists
 def parse_message(channel, user, msg):
-    if len(msg) >= 1:
+    if (len(msg) >= 1):
         msg = msg.split(' ')
         for commandID in options:
             command = getattr(module_name, commandID)
-            if(command.getCommand() == msg[0]):
-                command.excuteCommand(con, channel, user, msg, user in mods.get(channel), False)
+            if (command.getCommand() == msg[0]):
+                modStatus = False
+                if (channel in mods):
+                    modStatus = user in mods.get(channel)
+                command.excuteCommand(con, channel, user, msg, modStatus, False)
                 break
         if (msg[0] in cmds):
             global cmds
@@ -71,7 +71,7 @@ def parse_message(channel, user, msg):
             print response
             send_message(con, channel, response)
 
-# Connect to the host and join the appropriate channel(s)            
+# Connect to the host and join the appropriate channel(s)
 con = socket.socket()
 con.connect((HOST, PORT))
 
@@ -80,12 +80,12 @@ send_nick(con, NICK)
 for c in CHAN:
     join_channel(con, c)
 
-data = ''
+data = ""
 
 while True:
     try:
         data = data+con.recv(1024)
-        data_split = re.split(r'[~\r\n]+', data)
+        data_split = re.split(r'[\r\n]+', data)
         data = data_split.pop()
 
         for line in data_split:
@@ -103,46 +103,50 @@ while True:
                 message = ' '.join(line)
                 x = re.findall('^:jtv MODE (.*?) \+o (.*)$', message)
                 if (len(x) > 0):
-                    channel = x[0][0] 
+                    channel = x[0][0]
                     if (channel not in mods):
                         mods[channel] = []
                     list = mods.get(channel)
                     list.append(x[0][1])
-                    print(mods)
-
+                    print(mods) 
+                    
                 # Removing mods
                 y = re.findall('^:jtv MODE (.*?) \-o (.*)$', message)
                 if (len(y) > 0):
                     channel = y[0][0]
                     if (channel in mods):
                         mods.get(channel).remove(y[0][1])
-                        print(mods)
+                        print(mods) 
 
                 if (line[1] == 'PRIVMSG'):
                     sender = get_sender(line[0])
                     message = get_message(line)
                     channel = line[2]
                     if (sender == 'rubbixcube'):
-                        print('*DEV* ' + sender + ': ' + message)'
+                        print('*DEV* ' + sender + ' (' + channel + ')' + ': ' + message)
                     elif (sender == 'lclc98'):
-                        print('*DEV* ' + sender + ': ' + message)
+                        print('*DEV* ' + sender + ' (' + channel + ')' + ': ' + message)
                     elif (sender == channel[1:]):
-                        print('*STR* ' + sender + ': ' + message)
+                        print('*STR* ' + sender + ' (' + channel + ')' + ': ' + message)
                     elif (channel in mods):
                         if (sender in mods.get(channel)):
-                            print('*MOD* ' + sender + ': ' + message)
+                            print('*MOD* ' + sender + ' (' + channel + ')' + ': ' + message)
                     else:
-                        print(sender + ': ' + message)
+                        print(sender + ' (' + channel + ')' + ': ' + message)
 
                     # FEATURE: Sub welcome
-                    if (sender == 'twitchnotify'):
+                    if (sender == "twitchnotify"):
                         command = getattr(module_name, 'TwitchNotify')
                         command.excuteCommand(con, channel, sender, message, False, False)
 
                     # Load new commands whenever somebody adds a command.
                     if (re.search('!com add \w*', message)):
                         cmds = pickle.load(open('cmds.p', 'r+'))
-                        
+
+                    if (re.search("(.*)RAF2.*com (.*)Get.*Medieval.*Twitch(.*)5.000.*IP from Riots .*Refer.*A.*Friend on (.*)RAF2.*com", message)):
+                        command = getattr(module_name, 'BanBot')
+                        command.executeCommand(con, channel, sender, message, False, False)
+                    
                     parse_message(channel, sender, message)
                     
     except socket.error:
