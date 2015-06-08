@@ -7,41 +7,42 @@ import time
 import re
 
 # Variables
+dcounter = 0
 cmds = {}
+banned = []
 points = pickle.load(open('points.p', 'r+'))
 #points = {}
 
-
-# Basic Use of commands #
+# Command template #
 class ICommand(object):
     def getCommand():
         return 'UNKNOWN'
-    
+
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        print(message)
+        send_message(con, channel, 'MESSAGE')
         
-# Allow the bot to join other channels (DEPRECIATED)
+# Allow the bot to join other channels
 class Join(ICommand):
     @staticmethod
     def getCommand():
         return '!join'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        #if (channel == ''): # Only works in specified channel
-        # Works in every channel now
         if (isMod):
-            if (len(message) > 1):
-                if (message[1][0] == '#'): 
-                    send_message(con, channel, 'Now joining ' + message[1])
-                    join_channel(con, message[1])
-                    send_message(con, message[1], 'Hey there! I\'m MrBotto, my owner is RubbixCube who takes good care of me! I can do a lot of things and work best with Nightbot & Moobot.')
-                elif (message[1] == 'silent'): # No welcome message on join
-                    if (message[2][0] == '#'):
-                        send_message(con, channel, 'Now joining ' + message[2])
-                        join_channel(con, message[2])
-                else:
-                    # Assume invalid syntax
-                    send_message(con, channel, 'Error: Invalid syntax. Please add a # before the channel name')
+            if (channel == '#mrbotto'): # Only works in bot's channel
+                if (('#' + user) == message[1]):
+                    if (len(message) > 1):
+                        if (message[1][0] == '#'): 
+                            send_message(con, channel, 'Now joining ' + message[1])
+                            join_channel(con, message[1])
+                            send_message(con, message[1], 'Hey there! I\'m MrBotto, my owner is RubbixCube who takes good care of me! I can do a lot of things and work best with Nightbot & Moobot.')
+                        elif (message[1] == 'silent'): # No welcome message on join
+                            if (message[2][0] == '#'):
+                                send_message(con, channel, 'Now joining ' + message[2])
+                                join_channel(con, message[2])
+                        else:
+                            # Assume invalid syntax
+                            send_message(con, channel, 'Error: Invalid syntax. Please add a # before the channel name')
 
 # Allow the bot to leave other channels
 class Leave(ICommand):
@@ -51,7 +52,7 @@ class Leave(ICommand):
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
         if (isMod):
-            send_message(con, channel, 'Good bye')
+            send_message(con, channel, 'Forced disconnect.')
             part_channel(con, channel)
 
 
@@ -62,7 +63,7 @@ class Help(ICommand):
         return '!help'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'List of basic commands: !who, !here, !ver, !leave, !botto')
+        send_message(con, channel, 'Need help? You can find a Wiki all about me here: ')
 
 # Who made the bot
 class Who(ICommand):
@@ -90,6 +91,33 @@ class MrBotto(ICommand):
     @staticmethod
     def excuteCommand(con, channel, user, message, isMod, isSub):
         send_message(con, channel, 'MrDestructoid Domo Arigato Mr Botto MrDestructoid')
+
+           
+## Channel specific commands ##
+# Deathcounter for Chris
+class DCounter(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!deaths'
+    @staticmethod    
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        global dcounter
+        if (channel == '#teiresias911'):
+            if (len(message) > 2):
+                if (message[1] == 'add'):
+                    if (isMod):
+                        dcounter = int(dcounter) + 1
+                        send_message(con, channel, 'Deathcounter now at ' + str(dcounter))
+                if (message[1] == 'set'):
+                    if (isMod):
+                        dcounter = int(message[2])
+                        send_message(con, channel, 'Deathcounter now set to ' + str(dcounter))
+                if (message[1] == 'reset'):
+                    if (isMod):
+                        dcounter = 0
+                        send_message(con, channel, 'The Deathcounter has been reset')
+        else:
+            send_message(con, channel, 'Deathcounter: ' + str(dcounter))
 
 
 ## FEATURE: Sub welcome ##
@@ -195,27 +223,32 @@ class TwitchSlot(ICommand):
         return '!slotpull'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        emote = ['4Head', 'ANELE', 'ArsonNoSexy', 'AsianGlow', 'AtGL', 'AthenaPMS', 'AtIvy', 'AtWW', 'BabyRage', 'BatChest', 'BCWarrior', 'BibleThump', 'BigBrother', 'BionicBunion', 'BlargNaut', 'BloodTrail', 'BORT', 'BrainSlug', 'BrokeBack', 'BuddhaBar', 'CorgiDerp', 'CougarHunt', 'DAESuppy', 'DansGame', 'DatHass', 'DatSheffy', 'DBstyle', 'DendiFace', 'DogFace', 'EagleEye', 'EleGiggle', 'EvilFetus', 'FailFish', 'FPSMarksman', 'FrankerZ', 'FreakinStinkin', 'FUNgineer', 'FunRun', 'FuzzyOtterOO', 'GasJoker', 'GingerPower', 'GrammarKing', 'HassanChop', 'HeyGuys', 'HotPokket', 'HumbleLife', 'ItsBoshyTime', 'Jebaited', 'JKanStyle', 'JonCarnage', 'KAPOW', 'Kappa', 'Keepo', 'KevinTurtle', 'Kippa', 'Kreygasm', 'KZskull', 'Mau5', 'mcaT', 'MechaSupes', 'MrDestructoid', 'MVGame', 'NightBat', 'NinjaTroll', 'NoNoSpot', 'noScope', 'NotAtk', 'OMGScoots', 'OneHand', 'OpieOP', 'OptimizePrime', 'panicBasket', 'PanicVis', 'PazPazowitz', 'PeoplesChamp', 'PermaSmug', 'PicoMause', 'PipeHype', 'PJHarley', 'PJSalt', 'PMSTwin', 'PogChamp', 'Poooound', 'PraiseIt', 'PRChase', 'PunchTrees', 'PuppeyFace', 'RaccAttack', 'RalpherZ', 'RedCoat', 'ResidentSleeper', 'RitzMitz', 'RuleFive', 'Shazam', 'shazamicon', 'ShazBotstix', 'ShibeZ', 'SMOrc', 'SMSkull', 'SoBayed', 'SoonerLater', 'SriHead', 'SSSsss', 'StoneLightning', 'StrawBeary', 'SuperVinlin', 'SwiftRage', 'tbBaconBiscuit', 'tbChickenBiscuit', 'tbQuesarito', 'tbSausageBiscuit', 'tbSpicy', 'tbSriracha', 'TF2John', 'TheRinger', 'TheTarFu', 'TheThing', 'ThunBeast', 'TinyFace', 'TooSpicy', 'TriHard', 'TTours', 'UleetBackup', 'UncleNox', 'UnSane', 'Volcania', 'WholeWheat', 'WinWaker', 'WTRuck', 'WutFace', 'YouWHY']
-        slot1 = random.choice(emote) #Twitch Emote 1
-        slot2 = random.choice(emote) #Twitch Emote 2
-        slot3 = random.choice(emote) #Twitch Emote 3
         if (user not in points):
-            points[user] = 0
-        if (slot1 == 'Kappa'):
-            if (slot2 == 'Kappa'):
-                if (slot3 == 'Kappa'):
-                    send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
-                    send_message(con, channel, 'PogChamp We have a winner! Congratulations ' + user + '. You have won 100 000 points!')
-                    points[user] = points[user] + 100000
-                    pickle.dump(points, open('points.p','wb'))
-        elif (slot1 == slot2 == slot3):
-            send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
-            send_message(con, channel, 'We have a winner! Congratulations ' + user + '. You have won 1000 points!')
-            points[user] = points[user] + 1000
-            pickle.dump(points, open('points.p','wb'))
+            send_message(con, channel, 'You have been given 100 points as you just joined the system.')
+            points[user] = 100
+        if (points[user] > 20):
+            points[user] = points[user] - 20
+            emote = ['4Head', 'ANELE', 'ArsonNoSexy', 'AsianGlow', 'AtGL', 'AthenaPMS', 'AtIvy', 'AtWW', 'BabyRage', 'BatChest', 'BCWarrior', 'BibleThump', 'BigBrother', 'BionicBunion', 'BlargNaut', 'BloodTrail', 'BORT', 'BrainSlug', 'BrokeBack', 'BuddhaBar', 'CorgiDerp', 'CougarHunt', 'DAESuppy', 'DansGame', 'DatHass', 'DatSheffy', 'DBstyle', 'DendiFace', 'DogFace', 'EagleEye', 'EleGiggle', 'EvilFetus', 'FailFish', 'FPSMarksman', 'FrankerZ', 'FreakinStinkin', 'FUNgineer', 'FunRun', 'FuzzyOtterOO', 'GasJoker', 'GingerPower', 'GrammarKing', 'HassanChop', 'HeyGuys', 'HotPokket', 'HumbleLife', 'ItsBoshyTime', 'Jebaited', 'JKanStyle', 'JonCarnage', 'KAPOW', 'Kappa', 'Keepo', 'KevinTurtle', 'Kippa', 'Kreygasm', 'KZskull', 'Mau5', 'mcaT', 'MechaSupes', 'MrDestructoid', 'MVGame', 'NightBat', 'NinjaTroll', 'NoNoSpot', 'noScope420', 'NotAtk', 'OMGScoots', 'OneHand', 'OpieOP', 'OptimizePrime', 'panicBasket', 'PanicVis', 'PazPazowitz', 'PeoplesChamp', 'PermaSmug', 'PicoMause', 'PipeHype', 'PJHarley', 'PJSalt', 'PMSTwin', 'PogChamp', 'Poooound', 'PraiseIt', 'PRChase', 'PunchTrees', 'PuppeyFace', 'RaccAttack', 'RalpherZ', 'RedCoat', 'ResidentSleeper', 'RitzMitz', 'RuleFive', 'Shazam', 'shazamicon', 'ShazBotstix', 'ShibeZ', 'SMOrc', 'SMSkull', 'SoBayed', 'SoonerLater', 'SriHead', 'SSSsss', 'StoneLightning', 'StrawBeary', 'SuperVinlin', 'SwiftRage', 'tbBaconBiscuit', 'tbChickenBiscuit', 'tbQuesarito', 'tbSausageBiscuit', 'tbSpicy', 'tbSriracha', 'TF2John', 'TheRinger', 'TheTarFu', 'TheThing', 'ThunBeast', 'TinyFace', 'TooSpicy', 'TriHard', 'TTours', 'UleetBackup', 'UncleNox', 'UnSane', 'Volcania', 'WholeWheat', 'WinWaker', 'WTRuck', 'WutFace', 'YouWHY']
+            slot1 = random.choice(emote) #Twitch Emote 1
+            slot2 = random.choice(emote) #Twitch Emote 2
+            slot3 = random.choice(emote) #Twitch Emote 3
+            if (slot1 == 'Kappa'):
+                if (slot2 == 'Kappa'):
+                    if (slot3 == 'Kappa'):
+                        send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
+                        send_message(con, channel, 'PogChamp We have a winner! Congratulations ' + user + '. You have won 100 000 points!')
+                        points[user] = points[user] + 1000000 # 1Mil
+                        pickle.dump(points, open('points.p','wb'))
+            elif (slot1 == slot2 == slot3):
+                send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
+                send_message(con, channel, 'We have a winner! Congratulations ' + user + '. You have won 1000 points!')
+                points[user] = points[user] + 50000 # 50K
+                pickle.dump(points, open('points.p','wb'))
+            else:
+                send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
         else:
-            send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
-           
+            send_message(con, channel, 'Sorry. You do not have enough points')
+            
 class TwitchSlotMod(ICommand):
     @staticmethod
     def getCommand():
@@ -226,7 +259,7 @@ class TwitchSlotMod(ICommand):
             if (len(message) > 1):
                 if (message[1] == 'remove'):
                     emote.remove(message[2])
-                    send_message(con, channel, 'An emote has been removed')
+                    send_message(con, channel, 'An emote has been removed')          
 
 class PointsMOD(ICommand):
     @staticmethod
@@ -257,3 +290,13 @@ class PointsMOD(ICommand):
                     send_message(con, channel, message[2] + ': ' + str(points[message[2]]))
                 else: #User not in points dictionary
                     send_message(con, channel, 'Error: The username was not found in the dictionary')
+
+class BanBot(ICommand):
+    @staticmethod
+    def getCommand():
+        return 'banbot'
+    @staticmethod
+    def executeCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, 'Punishment has been served.')
+        send_message(con, channel, '.ban ' + user)
+        
