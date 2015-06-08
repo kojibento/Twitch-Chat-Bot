@@ -21,7 +21,7 @@ PASS = ''                                       # OAuth Key
 
 
 # Show info in the shell/terminal
-print('MrBotto ver. 3.0 | Created & Modified by RubbixCube & lclc98')
+print('MrBotto ver. 3.1.0 | Created & Modified by RubbixCube & lclc98')
 print('Important Information:')
 print('HOST = ' + HOST)
 print('PORT = ' + str(PORT))
@@ -32,20 +32,20 @@ print('Chat Log:')
 
 ## Main Program ##
 def get_sender(msg):
-    result = ""
+    result = ''
     for char in msg:
-        if char == "!":
+        if char == '!':
             break
-        if char != ":":
+        if char != ':':
             result += char
     return result
 
 def get_message(msg):
-    result = ""
+    result = ''
     i = 3
     length = len(msg)
     while i < length:
-        result += msg[i] + " "
+        result += msg[i] + ' '
         i += 1
     result = result.lstrip(':')
     return result
@@ -80,23 +80,23 @@ send_nick(con, NICK)
 for c in CHAN:
     join_channel(con, c)
 
-data = ""
+data = ''
 
 while True:
     try:
         data = data+con.recv(1024)
-        data_split = re.split(r"[~\r\n]+", data)
+        data_split = re.split(r'[~\r\n]+', data)
         data = data_split.pop()
 
         for line in data_split:
-            print(line)
+            #print(line)
             #line = str.rstrip(line)
             line = str.split(line)
 
 	    # Stay connected to the server
             if len(line) >= 1:
                 if line[0] == 'PING':
-                    print(line[0] +":"+ line[1])
+                    print(line[0] +':'+ line[1])
                     send_pong(con, line[1])
 
                 # FEATURE: Adding mods (decided by JTV)
@@ -123,6 +123,8 @@ while True:
                     message = get_message(line)
                     channel = line[2]
                     if (sender == 'rubbixcube'):
+                        print('*DEV* ' + sender + ': ' + message)'
+                    elif (sender == 'lclc98'):
                         print('*DEV* ' + sender + ': ' + message)
                     elif (sender == channel[1:]):
                         print('*STR* ' + sender + ': ' + message)
@@ -133,7 +135,7 @@ while True:
                         print(sender + ': ' + message)
 
                     # FEATURE: Sub welcome
-                    if (sender == "twitchnotify"):
+                    if (sender == 'twitchnotify'):
                         command = getattr(module_name, 'TwitchNotify')
                         command.excuteCommand(con, channel, sender, message, False, False)
 
@@ -144,7 +146,7 @@ while True:
                     parse_message(channel, sender, message)
                     
     except socket.error:
-        print("Socket died")
+        print('Socket died')
 
     except socket.timeout:
-        print("Socket timeout")
+        print('Socket timeout')
