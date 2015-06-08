@@ -15,6 +15,9 @@ cmds = pickle.load(open('cmds.p', 'r+'))
 # Get required information #
 HOST = 'irc.twitch.tv'                          # Twitch IRC Network
 PORT = 6667                                     # Default IRC-Port
+CHAN = ['#XXXXXXXXXX']                          # Channelname = #{Nickname}
+NICK = 'XXXXXXX'                                # Twitch username
+PASS = 'oauth:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'   # OAuth Key
 
 
 # Show info in the shell/terminal
