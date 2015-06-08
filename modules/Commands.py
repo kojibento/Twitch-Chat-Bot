@@ -274,7 +274,7 @@ class PointsMOD(ICommand):
                     send_message(con, channel, message[3] + ' points have been added to ' + message[2] + '\'s balance.')
                     pickle.dump(points, open('points.p','wb'))
                 else: #User not in the points dictionary
-                    points[message[2]] = 0
+                    points[message[2]] = 100
                     points[message[2]] = points[message[2]] + int(message[3])
                     send_message(con, channel, message[3] + ' points have been added to ' + message[2] + '\'s balance.')
                     pickle.dump(points, open('points.p','wb'))
