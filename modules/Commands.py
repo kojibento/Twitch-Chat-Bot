@@ -1,4 +1,3 @@
-## Commands ##
 # Import resources
 from IRCCommands import *
 import random
@@ -30,7 +29,7 @@ class Join(ICommand):
     def excuteCommand(con, channel, user, message, isMod, isSub):
         if (isMod):
             if (channel == '#mrbotto'): # Only works in bot's channel
-                if (('#' + user) == message[1]):
+                if (('#' + user) == message[1]) or (user == 'rubbixcube'):
                     if (len(message) > 1):
                         if (message[1][0] == '#'): 
                             send_message(con, channel, 'Now joining ' + message[1])
@@ -55,6 +54,7 @@ class Leave(ICommand):
             send_message(con, channel, 'Forced disconnect.')
             part_channel(con, channel)
 
+#------------------------------------------------------------------------------#
 
 ## Global Commands ##
 class Help(ICommand):
@@ -83,7 +83,7 @@ class Here(ICommand):
     def excuteCommand(con, channel, user, message, isMod, isSub):
         send_message(con, channel, 'I\'m here ' + user + '-senpai!')
 
-# Easter Egg
+# ??
 class MrBotto(ICommand):
     @staticmethod
     def getCommand():
@@ -92,7 +92,33 @@ class MrBotto(ICommand):
     def excuteCommand(con, channel, user, message, isMod, isSub):
         send_message(con, channel, 'MrDestructoid Domo Arigato Mr Botto MrDestructoid')
 
-           
+# Sass
+class Daddy(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!daddy'
+    @staticmethod
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, 'My father is RubbixCube and my "other" father would be lclc98... Sadly, he is never around FeelsBadMan')
+
+class Rivalry(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!rivalry'
+    @staticmethod
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, 'If you want a bot that does what it needs to, Nightbot and Moobot are your answers. But if you require advanced scripts/commands, I/m your bot :D')
+
+class Age(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!age'
+    @staticmethod
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, 'In Human years, I/m considered an Infant. In Computer years, maybe a few thousand OpieOP')
+
+#------------------------------------------------------------------------------#
+
 ## Channel specific commands ##
 # Deathcounter for Chris
 class DCounter(ICommand):
@@ -120,7 +146,7 @@ class DCounter(ICommand):
             send_message(con, channel, 'Deathcounter: ' + str(dcounter))
 
 
-## FEATURE: Sub welcome ##
+# Sub Notify
 class TwitchNotify(ICommand):
     @staticmethod
     def getCommand():
@@ -135,7 +161,7 @@ class TwitchNotify(ICommand):
         elif (re.match('\w* viewers resubscribed while you were away!', message)):
             send_message(con, channel, 'Thanks for subscribing!')
 
-## FEATURE: Add/Edit/Delete commands from chat ##
+# Chat Commands
 class ComAdd(ICommand):
     @staticmethod
     def getCommand():
@@ -216,7 +242,7 @@ class Com(ICommand):
                 else:
                     send_message(con, channel, 'Invalid Syntax. Please try again or ask for help.')
 
-## FEATURE: TwitchEmote slot machine ## 
+# MiniGame: TwitchSlots 
 class TwitchSlot(ICommand):
     @staticmethod
     def getCommand():
@@ -236,7 +262,7 @@ class TwitchSlot(ICommand):
                 if (slot2 == 'Kappa'):
                     if (slot3 == 'Kappa'):
                         send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
-                        send_message(con, channel, 'PogChamp We have a winner! Congratulations ' + user + '. You have won 100 000 points!')
+                        send_message(con, channel, 'PogChamp We have a winner! Congratulations ' + user + '. You have won 1 000 000 points!')
                         points[user] = points[user] + 1000000 # 1Mil
                         pickle.dump(points, open('points.p','wb'))
             elif (slot1 == slot2 == slot3):
@@ -248,19 +274,27 @@ class TwitchSlot(ICommand):
                 send_message(con, channel, slot1 + ' | ' + slot2 + ' | ' + slot3)
         else:
             send_message(con, channel, 'Sorry. You do not have enough points')
-            
-class TwitchSlotMod(ICommand):
+
+# MiniGame: Roulette
+class Roulette(ICommand):
     @staticmethod
     def getCommand():
-        return '!slotmod'
-    @staticmethod    
+        return '!bet'
+    @staticmethod
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        if (isMod):
-            if (len(message) > 1):
-                if (message[1] == 'remove'):
-                    emote.remove(message[2])
-                    send_message(con, channel, 'An emote has been removed')          
+        if (len(message) > 1):
+            if (points[user] >= message[1]):
+                points[user] = points[user] - message[1]
+                chance = [1,2] #RNG System
+                result = random.choice(chance)
+                if (result == 1):
+                    send_message(con, channel, 'Lady luck did not consent to smile, ' + user + ' have been killed...')
+                else:
+                    send_message(con, channel, 'You beat the system ' + user +'. We have depostited ' + str(2*num) + ' into your account.')
+            else:
+                send_message(con, channel, 'Sorry ' + user + '. You do not have enough points for that bet.')
 
+# Points Moderation
 class PointsMOD(ICommand):
     @staticmethod
     def getCommand():
@@ -291,6 +325,7 @@ class PointsMOD(ICommand):
                 else: #User not in points dictionary
                     send_message(con, channel, 'Error: The username was not found in the dictionary')
 
+# Auto Ban
 class BanBot(ICommand):
     @staticmethod
     def getCommand():
