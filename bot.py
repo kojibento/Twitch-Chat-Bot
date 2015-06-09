@@ -15,7 +15,7 @@ cmds = pickle.load(open('cmds.p', 'r+'))
 # Get required information #
 HOST = 'irc.twitch.tv'                          # Twitch IRC Network
 PORT = 6667                                     # Default IRC-Port
-CHAN = ['#XXXXXXXXXX']                          # Channelname = #{Nickname}
+CHAN = ['#XXXXXX']                              # Channelname = #{Nickname}
 NICK = 'XXXXXXX'                                # Twitch username
 PASS = 'oauth:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'   # OAuth Key
 
@@ -52,13 +52,16 @@ def get_message(msg):
 module_name = importlib.import_module('modules.Commands')
             
 # List all commandID's in Commands.py
-options = ['Join', 'Leave','Help' ,'Who', 'Here', 'MrBotto',
-            'DCounter', 'ComAdd', 'ComDel', 'ComEdit', 'Com',
-           'TwitchSlot', 'TwitchSlotMod', 'PointsMOD']
+options = ['Join','Leave','Help','Who','Here','MrBotto',
+           'Daddy','Rivalry','Age','DCounter','ComAdd',
+           'ComDel','ComEdit','Com','TwitchSlot',
+           'Roulette','PointsMOD']
+
 # Check whether a command exists
 def parse_message(channel, user, msg):
     if (len(msg) >= 1):
         msg = msg.split(' ')
+        global cmds
         for commandID in options:
             command = getattr(module_name, commandID)
             if (command.getCommand() == msg[0]):
@@ -68,7 +71,6 @@ def parse_message(channel, user, msg):
                 command.excuteCommand(con, channel, user, msg, modStatus, False)
                 break
         if (msg[0] in cmds):
-            global cmds
             cmds = pickle.load(open('cmds.p', 'r+'))
             response = cmds[msg[0]]
             print response
@@ -104,14 +106,16 @@ while True:
 
                 # FEATURE: Adding mods (decided by JTV)
                 message = ' '.join(line)
-                x = re.findall('^:jtv MODE (.*?) \+o (.*)$', message)
+                x = re.findall('^:jtv MODE (.*?) \+o (.*)$', message) # Find the message
                 if (len(x) > 0):
                     channel = x[0][0]
-                    if (channel not in mods):
+                    if (channel not in mods): # If the channel isn't already in the list
                         mods[channel] = []
-                    list = mods.get(channel)
-                    list.append(x[0][1])
-                    print(mods) 
+                    modList = mods.get(channel)
+                    # Experimental statement below...
+                    if (type(modList) != str): # Check if the list is in str mode
+                        modList.append(x[0][1])
+                        print(mods) # Print updated list with new mods
                     
                 # Removing mods
                 y = re.findall('^:jtv MODE (.*?) \-o (.*)$', message)
@@ -126,6 +130,8 @@ while True:
                     message = get_message(line)
                     channel = line[2]
                     if (sender == 'rubbixcube'):
+                        if (sender not in mods):
+                            mods[channel] = 'rubbixcube'
                         print('*DEV* ' + sender + ' (' + channel + ')' + ': ' + message)
                     elif (sender == 'lclc98'):
                         print('*DEV* ' + sender + ' (' + channel + ')' + ': ' + message)
@@ -137,7 +143,7 @@ while True:
                     else:
                         print(sender + ' (' + channel + ')' + ': ' + message)
 
-                    # FEATURE: Sub welcome
+                    # FEATURE: Sub Notify
                     if (sender == "twitchnotify"):
                         command = getattr(module_name, 'TwitchNotify')
                         command.excuteCommand(con, channel, sender, message, False, False)
@@ -146,9 +152,11 @@ while True:
                     if (re.search('!com add \w*', message)):
                         cmds = pickle.load(open('cmds.p', 'r+'))
 
-                    if (re.search("(.*)RAF2.*com (.*)Get.*Medieval.*Twitch(.*)5.000.*IP from Riots .*Refer.*A.*Friend on (.*)RAF2.*com", message)):
-                        command = getattr(module_name, 'BanBot')
-                        command.executeCommand(con, channel, sender, message, False, False)
+                    # Ban RAF2 bots (Only in Chris' channel)
+                    if (channel == 'teiresias911'):
+                        if (re.search("(.*)RAF2.*com (.*)Get.*Medieval.*Twitch(.*)5.000.*IP from Riots .*Refer.*A.*Friend on (.*)RAF2.*com", message)):
+                            command = getattr(module_name, 'BanBot')
+                            command.executeCommand(con, channel, sender, message, False, False)
                     
                     parse_message(channel, sender, message)
                     
