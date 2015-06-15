@@ -4,6 +4,7 @@ import random
 import pickle
 import time  
 import re
+import os
 
 # Variables
 dcounter = 0
@@ -11,6 +12,9 @@ cmds = {}
 banned = []
 points = pickle.load(open('points.p', 'r+'))
 #points = {}
+fileN = 'banned.txt'
+filename = os.getcwd() + '\\Banned Users\\' + fileN
+dir_ = os.getcwd() + '\\Banned Users\\'
 
 # Command template #
 class ICommand(object):
@@ -63,7 +67,16 @@ class Help(ICommand):
         return '!help'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'Need help? You can find a Wiki all about me here: ')
+        send_message(con, channel, 'Need help? You can find a Wiki all about me here: http://github.com/RubbixCube/Twitch-Chat-Bot/wiki')
+
+# List Commands
+class Commands(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!cmdlist'
+    @staticmethod
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, 'All the commands can be found here: http://github.com/RubbixCube/Twitch-Chat-Bot/wiki/commands')
 
 # Who made the bot
 class Who(ICommand):
@@ -107,7 +120,7 @@ class Rivalry(ICommand):
         return '!rivalry'
     @staticmethod
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'If you want a bot that does what it needs to, Nightbot and Moobot are your answers. But if you require advanced scripts/commands, I/m your bot :D')
+        send_message(con, channel, 'If you want a bot that does what it needs to, Nightbot and Moobot are your answers. But if you require advanced scripts/commands, I\'m your bot :D')
 
 class Age(ICommand):
     @staticmethod
@@ -332,6 +345,24 @@ class BanBot(ICommand):
         return 'banbot'
     @staticmethod
     def executeCommand(con, channel, user, message, isMod, isSub):
+        send_message(con, channel, '.ban ' + user) # Bans the user
         send_message(con, channel, 'Punishment has been served.')
-        send_message(con, channel, '.ban ' + user)
-        
+        if not (os.path.exists(dir_)):
+            os.makedirs(dir_)
+        banned = open(filename,'a')
+        banned.write(time.strftime("%Y-%m-%d %H:%M") + ' | ' + user + '\n')
+        banned.close()
+
+# Check how many users are banned
+class Check(ICommand):
+    @staticmethod
+    def getCommand():
+        return '!check'
+    @staticmethod
+    def excuteCommand(con, channel, user, message, isMod, isSub):
+        lines = 0
+        with open(filename,'r') as li:
+            for line in li:
+                if line.strip():
+                    lines += 1
+        send_message(con, channel, str(lines) + ' bots have been banned from this channel.')
