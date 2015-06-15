@@ -2,11 +2,13 @@
 ## MrBotto | Created by RubbixCube with help from lclc98. ##
 
 # Import resources
-import re
-import socket
-import pickle
 from modules.IRCCommands import *
 import importlib
+import socket
+import pickle
+import time
+import os
+import re
 
 # Define Variables
 mods = {}
@@ -52,10 +54,10 @@ def get_message(msg):
 module_name = importlib.import_module('modules.Commands')
             
 # List all commandID's in Commands.py
-options = ['Join','Leave','Help','Who','Here','MrBotto',
-           'Daddy','Rivalry','Age','DCounter','ComAdd',
-           'ComDel','ComEdit','Com','TwitchSlot',
-           'Roulette','PointsMOD']
+options = ['Join','Leave','Help','Commands','Who','Here',
+           'MrBotto','Daddy','Rivalry','Age','DCounter',
+           'ComAdd','ComDel','ComEdit','Com','TwitchSlot',
+           'Roulette','PointsMOD','Check']
 
 # Check whether a command exists
 def parse_message(channel, user, msg):
@@ -115,35 +117,34 @@ while True:
                     # Experimental statement below...
                     if (type(modList) != str): # Check if the list is in str mode
                         modList.append(x[0][1])
-                        print(mods) # Print updated list with new mods
+                        #print(mods) # Print updated list with new mods
                     
                 # Removing mods
                 y = re.findall('^:jtv MODE (.*?) \-o (.*)$', message)
                 if (len(y) > 0):
                     channel = y[0][0]
                     if (channel in mods):
-                        mods.get(channel).remove(y[0][1])
-                        print(mods) 
+                        if (type(mods.get(channel)) != str):
+                            mods.get(channel).remove(y[0][1])
+                            #print(mods) 
 
                 if (line[1] == 'PRIVMSG'):
                     sender = get_sender(line[0])
                     message = get_message(line)
                     channel = line[2]
-                    if (sender == 'rubbixcube'):
-                        if (sender not in mods):
-                            mods[channel] = 'rubbixcube'
-                        print('*DEV* ' + sender + ' (' + channel + ')' + ': ' + message)
-                    elif (sender == 'lclc98'):
-                        print('*DEV* ' + sender + ' (' + channel + ')' + ': ' + message)
-                    elif (sender == channel[1:]):
-                        print('*STR* ' + sender + ' (' + channel + ')' + ': ' + message)
-                    elif (channel in mods):
-                        if (sender in mods.get(channel)):
-                            print('*MOD* ' + sender + ' (' + channel + ')' + ': ' + message)
-                    else:
-                        print(sender + ' (' + channel + ')' + ': ' + message)
+                    
+                    # Log Chat
+                    fileTime = time.strftime("%Y-%m-%d") + '.txt'
+                    filename = os.getcwd() + '\Logs\\' + fileTime
+                    dir_ = os.getcwd() + '\Logs\\'
+                    print(time.strftime("%H:%M:%S") + ' | ' + sender + ' (' + channel + ')' + ': ' + message)
+                    if not (os.path.exists(dir_)):
+                        os.makedirs(dir_)
+                    log = open(filename,'a')
+                    log.write(time.strftime("%H:%M:%S") + ' | ' + sender + ' (' + channel + ')' + ': ' + message + '\n')
+                    log.close()
 
-                    # FEATURE: Sub Notify
+                    # Sub Notify
                     if (sender == "twitchnotify"):
                         command = getattr(module_name, 'TwitchNotify')
                         command.excuteCommand(con, channel, sender, message, False, False)
@@ -152,11 +153,15 @@ while True:
                     if (re.search('!com add \w*', message)):
                         cmds = pickle.load(open('cmds.p', 'r+'))
 
-                    # Ban RAF2 bots (Only in Chris' channel)
-                    if (channel == 'teiresias911'):
-                        if (re.search("(.*)RAF2.*com (.*)Get.*Medieval.*Twitch(.*)5.000.*IP from Riots .*Refer.*A.*Friend on (.*)RAF2.*com", message)):
-                            command = getattr(module_name, 'BanBot')
-                            command.executeCommand(con, channel, sender, message, False, False)
+                    # Ban RAF2 bots [EVERY CHANNEL]
+                    if (re.search("(.*)RAF2.*com (.*)Get.*Medieval.*Twitch(.*)5.000.*IP from Riots .*Refer.*A.*Friend on (.*)RAF2.*com", message)):
+                        command = getattr(module_name, 'BanBot')
+                        command.executeCommand(con, channel, sender, message, False, False)
+                            
+                    # Whisper feature... [Non-Existant]
+                    #if (msg[0] == '!mods') and (sender == 'rubbixcube'):
+                        #send_message(con, channel, '.w rubbixcube ' + str(mods))
+
                     
                     parse_message(channel, sender, message)
                     
