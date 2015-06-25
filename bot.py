@@ -14,7 +14,7 @@ import re
 mods = {}
 cmds = pickle.load(open('cmds.p', 'r+'))
 
-# Get required information #
+# Get required information
 HOST = 'irc.twitch.tv'                          # Twitch IRC Network
 PORT = 6667                                     # Default IRC-Port
 CHAN = ['#XXXXXX']                              # Channelname = #{Nickname}
@@ -54,8 +54,9 @@ def get_message(msg):
 module_name = importlib.import_module('modules.Commands')
             
 # List all commandID's in Commands.py
+# This allows the bot to 'see' an ID in the file
 options = ['Join','Leave','Help','Commands','Who','Here',
-           'MrBotto','Daddy','Rivalry','Age','DCounter',
+           'MrBotto','Cylons','Age','DCounter',
            'ComAdd','ComDel','ComEdit','Com','TwitchSlot',
            'Roulette','PointsMOD','Check']
 
@@ -106,7 +107,7 @@ while True:
                     print(line[0] +':'+ line[1])
                     send_pong(con, line[1])
 
-                # FEATURE: Adding mods (decided by JTV)
+                # Add the mod to a dictionary
                 message = ' '.join(line)
                 x = re.findall('^:jtv MODE (.*?) \+o (.*)$', message) # Find the message
                 if (len(x) > 0):
@@ -117,23 +118,19 @@ while True:
                     # Experimental statement below...
                     if (type(modList) != str): # Check if the list is in str mode
                         modList.append(x[0][1])
-                        #print(mods) # Print updated list with new mods
                     
-                # Removing mods
+                # Remove the mod from the dictionary
                 y = re.findall('^:jtv MODE (.*?) \-o (.*)$', message)
                 if (len(y) > 0):
                     channel = y[0][0]
                     if (channel in mods):
                         if (type(mods.get(channel)) != str):
-                            mods.get(channel).remove(y[0][1])
-                            #print(mods) 
+                            mods.get(channel).remove(y[0][1]) 
 
                 if (line[1] == 'PRIVMSG'):
                     sender = get_sender(line[0])
                     message = get_message(line)
                     channel = line[2]
-                    
-                    # Log Chat
                     fileTime = time.strftime("%Y-%m-%d") + '.txt'
                     filename = os.getcwd() + '\Logs\\' + fileTime
                     dir_ = os.getcwd() + '\Logs\\'
@@ -144,23 +141,51 @@ while True:
                     log.write(time.strftime("%H:%M:%S") + ' | ' + sender + ' (' + channel + ')' + ': ' + message + '\n')
                     log.close()
 
-                    # Sub Notify
+
+                    ''' Thank new/recurring subs '''
                     if (sender == "twitchnotify"):
                         command = getattr(module_name, 'TwitchNotify')
                         command.excuteCommand(con, channel, sender, message, False, False)
 
-                    # Load new commands whenever somebody adds a command.
+                    ''' Load new commands whenever somebody adds a command '''
                     if (re.search('!com add \w*', message)):
                         cmds = pickle.load(open('cmds.p', 'r+'))
 
-                    # Ban RAF2 bots [EVERY CHANNEL]
+                    ''' Ban advertising bots '''
                     if (re.search("(.*)RAF2.*com (.*)Get.*Medieval.*Twitch(.*)5.000.*IP from Riots .*Refer.*A.*Friend on (.*)RAF2.*com", message)):
                         command = getattr(module_name, 'BanBot')
                         command.executeCommand(con, channel, sender, message, False, False)
-                            
-                    # Whisper feature... [Non-Existant]
-                    #if (msg[0] == '!mods') and (sender == 'rubbixcube'):
-                        #send_message(con, channel, '.w rubbixcube ' + str(mods))
+
+                    ''' More advertising bots... (facepalm) '''
+                    if (re.search("(.*)championship riven skin code (.*)http://bit.ly/riven-skins-giveaway", message)):
+                        command = getattr(module_name, 'BanBot')
+                        command.executeCommand(con, channel, sender, message, False, False)
+
+                    ''' Find how long the channel has been live '''
+                    msg = str.split(message)
+                    if (msg[0] == '!live'):
+                        url = 'http://nightdev.com/hosted/uptime.php?channel=' + channel[1:]
+                        contents = urllib2.urlopen(url)
+                        live = contents.read()
+                        if (contents.read() == 'The channel is not live.'):
+                            send_message(con, channel, live)
+                        else:
+                            send_message(con, channel, 'The channel has been live for ' + live)
+
+                    ''' Last seen system '''
+                    if (msg[0] == '!whereis'):
+                        if (len(message) > 1):
+                            if (msg[1] in last_seen):
+                                s1 = last_seen[msg[1]]
+                                s2 = datetime.datetime.now()
+                                final = s2 - s1
+                                final = divmod(final.days * 86400 + final.seconds, 60)
+                                final_ = re.findall('(\d+)',str(final))
+                                send_message(con, channel, msg[1] + ' was last seen ' + str(final_[0]) + ' minute(s) and ' + str(final_[1]) + ' second(s) ago.')
+                            elif (msg[1] == 'mrbotto'):
+                                send_message(con, channel, 'Error 404: I do not exist Kappa')
+                            else:
+                                send_message(con, channel, 'It seems ' + msg[1] + ' is MIA. We need to send a team after them! Who wants to volunteer?')
 
                     
                     parse_message(channel, sender, message)
