@@ -11,7 +11,6 @@ dcounter = 0
 cmds = {}
 banned = []
 points = pickle.load(open('points.p', 'r+'))
-#points = {}
 fileN = 'banned.txt'
 filename = os.getcwd() + '\\Banned Users\\' + fileN
 dir_ = os.getcwd() + '\\Banned Users\\'
@@ -31,7 +30,7 @@ class Join(ICommand):
         return '!join'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        if (isMod):
+        if (isMod) or (user == 'rubbixcube'):
             if (channel == '#mrbotto'): # Only works in bot's channel
                 if (('#' + user) == message[1]) or (user == 'rubbixcube'):
                     if (len(message) > 1):
@@ -46,6 +45,8 @@ class Join(ICommand):
                         else:
                             # Assume invalid syntax
                             send_message(con, channel, 'Error: Invalid syntax. Please add a # before the channel name')
+            else:
+                send_message(con, channel, 'Please use this command in my channel ( twitch.tv/mrbotto )')
 
 # Allow the bot to leave other channels
 class Leave(ICommand):
@@ -106,21 +107,13 @@ class MrBotto(ICommand):
         send_message(con, channel, 'MrDestructoid Domo Arigato Mr Botto MrDestructoid')
 
 # Sass
-class Daddy(ICommand):
+class Cylons(ICommand):
     @staticmethod
     def getCommand():
-        return '!daddy'
+        return '!cylon'
     @staticmethod
     def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'My father is RubbixCube and my "other" father would be lclc98... Sadly, he is never around FeelsBadMan')
-
-class Rivalry(ICommand):
-    @staticmethod
-    def getCommand():
-        return '!rivalry'
-    @staticmethod
-    def excuteCommand(con, channel, user, message, isMod, isSub):
-        send_message(con, channel, 'If you want a bot that does what it needs to, Nightbot and Moobot are your answers. But if you require advanced scripts/commands, I\'m your bot :D')
+        send_message(con, channel, 'We are a version of Cylons, We assimilate together to purge all Kappa')
 
 class Age(ICommand):
     @staticmethod
@@ -259,7 +252,7 @@ class Com(ICommand):
 class TwitchSlot(ICommand):
     @staticmethod
     def getCommand():
-        return '!slotpull'
+        return '!spull'
     @staticmethod    
     def excuteCommand(con, channel, user, message, isMod, isSub):
         if (user not in points):
